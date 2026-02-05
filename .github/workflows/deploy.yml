@@ -34,6 +34,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ./
-          local-dir: dist/flow-minds/browser/
+          server-dir: /
+          local-dir: ./dist/flow-minds/browser/
           dangerous-clean-slate: true
