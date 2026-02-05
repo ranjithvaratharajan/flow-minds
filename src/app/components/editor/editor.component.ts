@@ -15,8 +15,13 @@ import { NgxSonnerToaster, toast } from 'ngx-sonner';
     <div class="h-screen flex flex-col md:flex-row bg-zinc-950 text-white overflow-hidden">
         <!-- Helper text / Header (Mobile only) -->
         <div class="md:hidden p-4 border-b border-zinc-800 bg-zinc-950 flex justify-between items-center">
-            <h1 class="text-cyan-400 font-display font-bold text-lg">FlowMinds</h1>
-             <span class="text-xs text-zinc-500">v1.0 (Nexus Client)</span>
+             <h1 class="text-cyan-400 font-display font-bold text-lg">FlowMinds</h1>
+             <div class="flex flex-col items-end">
+                <span class="text-xs text-zinc-500">v1.0 (Nexus Client)</span>
+                <span class="text-[10px] font-mono" [class.text-cyan-400]="quota() > 10" [class.text-yellow-500]="quota() <= 10 && quota() > 0" [class.text-red-500]="quota() === 0">
+                    QUOTA: {{ quota() }}/{{ quotaLimit() }}
+                </span>
+             </div>
         </div>
 
       <!-- Left Panel: Input -->
@@ -25,7 +30,13 @@ import { NgxSonnerToaster, toast } from 'ngx-sonner';
         <!-- Header (Desktop) -->
         <div class="hidden md:flex p-6 border-b border-zinc-900 justify-between items-baseline">
            <h1 class="text-cyan-400 font-display font-bold text-xl tracking-wider">FlowMinds</h1>
-           <span class="text-xs text-zinc-600 font-mono">NET-ARCH: ACTIVE</span>
+           <div class="flex gap-4 items-center font-mono text-xs">
+              <span [class.text-cyan-400]="quota() > 10" [class.text-yellow-500]="quota() <= 10 && quota() > 0" [class.text-red-500]="quota() === 0">
+                 DAILY QUOTA: {{ quota() }}/{{ quotaLimit() }}
+              </span>
+              <span class="text-zinc-600">|</span>
+              <span class="text-zinc-600">NET-ARCH: ACTIVE</span>
+           </div>
         </div>
 
         <!-- Input Area -->
@@ -99,6 +110,20 @@ export class EditorComponent {
   isLoading = signal(false);
   error = signal<string | null>(null);
 
+  quota = signal(0);
+  quotaLimit = signal(50);
+
+  constructor() {
+    this.refreshQuota();
+  }
+
+  refreshQuota() {
+    this.nexus.getQuota().subscribe(q => {
+      this.quota.set(q.remaining);
+      this.quotaLimit.set(q.limit);
+    });
+  }
+
   async generate() {
     if (!this.userPrompt().trim() || this.isLoading()) return;
 
@@ -110,6 +135,7 @@ export class EditorComponent {
       if (response.success) {
         this.diagramCode.set(response.data.mermaid);
         toast.success('Diagram generated successfully');
+        this.refreshQuota(); // Update quota after success
       }
     } catch (e: any) {
       console.error(e);
@@ -124,6 +150,11 @@ export class EditorComponent {
 
       this.error.set(errorMessage);
       this.diagramCode.set(''); // Clear any stale diagram
+
+      // Handle 429 specifically
+      if (errorMessage.includes('Daily Limit') || e.status === 429) {
+        this.quota.set(0); // Force UI update
+      }
 
       toast.error('Nexus Gateway Error', {
         description: errorMessage

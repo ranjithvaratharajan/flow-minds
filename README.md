@@ -27,6 +27,7 @@ Simply type your logic into the **Neural Link Input**, execute the protocol, and
     -   **Auto-fit**: Diagrams automatically scale to fit the viewport.
     -   **Centering**: Smart positioning for optimal visibility.
 -   **Responsive Design**: optimized for both Desktop (split view) and Mobile (stacked view).
+-   **Daily Quota System**: Built-in rate limiting (50 requests/day/user) to ensure fair usage of AI resources.
 -   **Toast Notifications**: Real-time status updates via a holographic notification system.
 
 ---

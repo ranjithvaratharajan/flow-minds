@@ -8,3 +8,9 @@ export interface GenerateResponse {
 export interface GenerateRequest {
     prompt: string;
 }
+
+export interface QuotaResponse {
+    remaining: number;
+    limit: number;
+    resetAt: string; // ISO Date string
+}
